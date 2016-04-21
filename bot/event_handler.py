@@ -9,6 +9,7 @@ class RtmEventHandler(object):
     def __init__(self, slack_clients, msg_writer):
         self.clients = slack_clients
         self.msg_writer = msg_writer
+        self.karma = {}
 
     def handle(self, event):
 
@@ -50,3 +51,15 @@ class RtmEventHandler(object):
                     self.msg_writer.demo_attachment(event['channel'])
                 else:
                     self.msg_writer.write_prompt(event['channel'])
+            else:
+                if msg_txt.endswith(("++", "--")):
+                    name=msg_txt[0:-2]
+                    action=msg_txt[-2:]
+                    if name not in self.karma:
+                        self.karma[name] = 0
+                    if action == "++":
+                       self.karma[name] = self.karma[name] + 1
+                    else:
+                       self.karma[name] = self.karma[name] - 1
+                    self.msg_writer.write_text(event['channel'], "karama " + str(self.karma[name])) 
+                       

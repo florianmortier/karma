@@ -47,6 +47,9 @@ class Messenger(object):
         txt = ":face_with_head_bandage: my maker didn't handle this error very well:\n>```{}```".format(err_msg)
         self.send_message(channel_id, txt)
 
+    def write_text(self, channel_id, msg):
+        self.send_message(channel_id, msg)
+
     def demo_attachment(self, channel_id):
         txt = "Beep Beep Boop is a ridiculously simple hosting platform for your Slackbots."
         attachment = {
