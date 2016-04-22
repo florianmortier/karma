@@ -1,7 +1,6 @@
-import json
 import logging
 import re
-
+from karma import KarmaHandler
 logger = logging.getLogger(__name__)
 
 
@@ -9,7 +8,7 @@ class RtmEventHandler(object):
     def __init__(self, slack_clients, msg_writer):
         self.clients = slack_clients
         self.msg_writer = msg_writer
-        self.karma = {}
+        self.karma = KarmaHandler(self.msg_writer)
 
     def handle(self, event):
 
@@ -32,34 +31,24 @@ class RtmEventHandler(object):
             self.msg_writer.write_help_message(event['channel'])
         else:
             pass
-
+    
     def _handle_message(self, event):
         # Filter out messages from the bot itself
         if not self.clients.is_message_from_me(event['user']):
 
             msg_txt = event['text']
 
-            if self.clients.is_bot_mention(msg_txt):
-                # e.g. user typed: "@pybot tell me a joke!"
-                if 'help' in msg_txt:
-                    self.msg_writer.write_help_message(event['channel'])
-                elif re.search('hi|hey|hello|howdy', msg_txt):
-                    self.msg_writer.write_greeting(event['channel'], event['user'])
-                elif 'joke' in msg_txt:
-                    self.msg_writer.write_joke(event['channel'])
-                elif 'attachment' in msg_txt:
-                    self.msg_writer.demo_attachment(event['channel'])
-                else:
-                    self.msg_writer.write_prompt(event['channel'])
-            else:
-                if msg_txt.endswith(("++", "--")):
-                    name=msg_txt[0:-2]
-                    action=msg_txt[-2:]
-                    if name not in self.karma:
-                        self.karma[name] = 0
-                    if action == "++":
-                       self.karma[name] = self.karma[name] + 1
-                    else:
-                       self.karma[name] = self.karma[name] - 1
-                    self.msg_writer.write_text(event['channel'], "karama " + str(self.karma[name])) 
-                       
+            #if self.clients.is_bot_mention(msg_txt):
+                # add bot response here!"
+            #else:
+                # if karma change
+            if self.karma.is_karma(msg_txt):
+                self.karma.handle(event['channel'], msg_txt)
+            if msg_txt.startswith("!"):
+                # bot command stating by '!'
+                command = msg_txt.split(" ")[0][1:]
+                if command == "karma":
+                    name = msg_txt.split(" ")[1]
+                    self.msg_writer.write_text(event['channel'], self.karma.get_karma(name))
+                if command == "help":
+                    self.msg_writer.write_text(event['channel'], self.karma.help())
