@@ -34,21 +34,21 @@ class RtmEventHandler(object):
     
     def _handle_message(self, event):
         # Filter out messages from the bot itself
-        if not self.clients.is_message_from_me(event['user']):
+        if 'user' in event and not self.clients.is_message_from_me(event['user']):
 
             msg_txt = event['text']
 
-            #if self.clients.is_bot_mention(msg_txt):
-                # add bot response here!"
-            #else:
-                # if karma change
+            #IF SELF.CLIENTS.IS_BOT_MENTION(MSG_TXT):
+                # ADD BOT RESPONSE HERE!"
+            #ELSE:
+                # IF KARMA CHANGE
             if self.karma.is_karma(msg_txt):
                 self.karma.handle(event['channel'], msg_txt)
-            if msg_txt.startswith("!"):
-                # bot command stating by '!'
-                command = msg_txt.split(" ")[0][1:]
-                if command == "karma":
-                    name = msg_txt.split(" ")[1]
+            if msg_txt.startswith("!") and len(msg_txt)>1:
+                message = msg_txt.split(" ")
+                command = message[0][1:]
+                if command == "karma" and len(message):
+                    name = msg_txt[len(command)+2:]
                     self.msg_writer.write_text(event['channel'], self.karma.get_karma(name))
                 if command == "help":
                     self.msg_writer.write_text(event['channel'], self.karma.help())
